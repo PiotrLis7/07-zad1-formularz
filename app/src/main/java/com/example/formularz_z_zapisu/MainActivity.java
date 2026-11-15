@@ -1,6 +1,7 @@
 package com.example.formularz_z_zapisu;
 
 import android.os.Bundle;
+import android.util.Patterns;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -46,7 +47,11 @@ public class MainActivity extends AppCompatActivity {
 
         setUpCourseSpinner();
 
-        btnSubmit.setOnClickListener(v -> submitForm());
+        btnSubmit.setOnClickListener(v -> {
+            if (validateForm()) {
+                submitForm();
+            }
+        });
     }
 
     private void setUpCourseSpinner() {
@@ -63,10 +68,48 @@ public class MainActivity extends AppCompatActivity {
         spCourse.setAdapter(adapter);
     }
 
-    private void submitForm() {
+    private boolean validateForm() {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
 
+        if (name.isEmpty()) {
+            etName.setError("Wpisz imię i nazwisko");
+            etName.requestFocus();
+            return false;
+        }
+
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            etEmail.setError("Wpisz poprawny adres e-mail");
+            etEmail.requestFocus();
+            return false;
+        }
+
+        if (birthDate.isEmpty()) {
+            Toast.makeText(this, "Wybierz datę urodzenia", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (spCourse.getSelectedItemPosition() == 0) {
+            Toast.makeText(this, "Wybierz kurs", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (rgMode.getCheckedRadioButtonId() == -1) {
+            Toast.makeText(this, "Wybierz tryb zajęć", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (!cbTerms.isChecked()) {
+            Toast.makeText(this, "Zaakceptuj regulamin", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
+    }
+
+    private void submitForm() {
+        String name = etName.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
         String course = spCourse.getSelectedItem().toString();
 
         String mode = "";
@@ -91,6 +134,5 @@ public class MainActivity extends AppCompatActivity {
                 + "Newsletter: " + (newsletter ? "Tak" : "Nie");
 
         tvSummary.setText(summary);
-        Toast.makeText(this, "Odczytano formularz", Toast.LENGTH_SHORT).show();
     }
 }
