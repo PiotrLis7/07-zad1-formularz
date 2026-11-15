@@ -1,5 +1,6 @@
 package com.example.formularz_z_zapisu;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.util.Patterns;
 import android.widget.ArrayAdapter;
@@ -13,8 +14,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.Calendar;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -46,12 +52,7 @@ public class MainActivity extends AppCompatActivity {
         tvSummary = findViewById(R.id.tvSummary);
 
         setUpCourseSpinner();
-
-        btnSubmit.setOnClickListener(v -> {
-            if (validateForm()) {
-                submitForm();
-            }
-        });
+        setUpListeners();
     }
 
     private void setUpCourseSpinner() {
@@ -66,6 +67,49 @@ public class MainActivity extends AppCompatActivity {
         );
 
         spCourse.setAdapter(adapter);
+    }
+
+    private void setUpListeners() {
+        cbTerms.setOnCheckedChangeListener((buttonView, isChecked) ->
+                btnSubmit.setEnabled(isChecked)
+        );
+
+        btnBirthDate.setOnClickListener(v -> showDatePicker());
+
+        btnSubmit.setOnClickListener(v -> {
+            if (validateForm()) {
+                askForConfirmation();
+            }
+        });
+    }
+
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog dialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    birthDate = String.format(
+                            Locale.getDefault(),
+                            "%04d-%02d-%02d",
+                            selectedYear,
+                            selectedMonth + 1,
+                            selectedDay
+                    );
+
+                    btnBirthDate.setText(birthDate);
+                },
+                year,
+                month,
+                day
+        );
+
+        dialog.getDatePicker().setMaxDate(calendar.getTimeInMillis());
+        dialog.show();
     }
 
     private boolean validateForm() {
@@ -107,6 +151,15 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    private void askForConfirmation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Potwierdzenie")
+                .setMessage("Czy na pewno wysłać zgłoszenie?")
+                .setPositiveButton("Tak", (dialog, which) -> submitForm())
+                .setNegativeButton("Nie", null)
+                .show();
+    }
+
     private void submitForm() {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
@@ -134,5 +187,12 @@ public class MainActivity extends AppCompatActivity {
                 + "Newsletter: " + (newsletter ? "Tak" : "Nie");
 
         tvSummary.setText(summary);
+
+        Snackbar.make(
+                        findViewById(R.id.main),
+                        "Zgłoszenie zostało wysłane",
+                        Snackbar.LENGTH_LONG
+                ).setAction("Cofnij", v -> tvSummary.setText(""))
+                .show();
     }
 }
