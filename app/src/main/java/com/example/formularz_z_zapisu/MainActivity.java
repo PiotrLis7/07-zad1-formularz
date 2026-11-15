@@ -1,6 +1,7 @@
 package com.example.formularz_z_zapisu;
 
 import android.os.Bundle;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -43,15 +44,30 @@ public class MainActivity extends AppCompatActivity {
         cbTerms = findViewById(R.id.cbTerms);
         tvSummary = findViewById(R.id.tvSummary);
 
+        setUpCourseSpinner();
+
         btnSubmit.setOnClickListener(v -> submitForm());
+    }
+
+    private void setUpCourseSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                this,
+                R.array.courses,
+                android.R.layout.simple_spinner_item
+        );
+
+        adapter.setDropDownViewResource(
+                android.R.layout.simple_spinner_dropdown_item
+        );
+
+        spCourse.setAdapter(adapter);
     }
 
     private void submitForm() {
         String name = etName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
 
-        String course = spCourse.getSelectedItem() != null
-                ? spCourse.getSelectedItem().toString() : "";
+        String course = spCourse.getSelectedItem().toString();
 
         String mode = "";
         int selectedMode = rgMode.getCheckedRadioButtonId();
